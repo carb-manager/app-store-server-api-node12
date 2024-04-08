@@ -1,7 +1,7 @@
 {
-  "name": "app-store-server-api",
-  "version": "0.14.0",
-  "description": "A client for the App Store Server API",
+  "name": "@carb-manager/app-store-server-api-node12",
+  "version": "0.15.0",
+  "description": "A client for the App Store Server API (backward compatible with Node v12)",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.js",
@@ -10,10 +10,11 @@
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:types": "tsc -p tsconfig.types.json",
-    "package": "npm run build && npm pack"
+    "package": "npm run build && npm pack",
+    "test": "tsc test.ts"
   },
   "publishConfig": {
-    "access": "public"
+    "registry": "https://npm.pkg.github.com/"
   },
   "files": [
     "dist"
@@ -42,6 +43,7 @@
     "url": "https://github.com/agisboye/app-store-server-api/issues"
   },
   "dependencies": {
+    "@fidm/x509": "^1.2.1",
     "jose": "^4.14.4",
     "node-fetch": "^2.6.11",
     "uuid": "^9.0.0"

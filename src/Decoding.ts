@@ -1,4 +1,4 @@
-import { X509Certificate } from "crypto"
+import { Certificate } from "@fidm/x509"
 import * as jose from "jose"
 import { APPLE_ROOT_CA_G3_FINGERPRINT } from "./AppleRootCertificate"
 import { CertificateValidationError } from "./Errors"
@@ -75,28 +75,21 @@ async function decodeJWS(token: string, rootCertFingerprint: string = APPLE_ROOT
  */
 function validateCertificates(certificates: string[], rootCertFingerprint: string) {
   if (certificates.length === 0) throw new CertificateValidationError([])
-
-  const x509certs = certificates.map(c => new X509Certificate(c))
+  const x509certs = certificates.map(c => Certificate.fromPEM(Buffer.from(c)));
 
   // Check dates
-  const now = new Date()
-  const datesValid = x509certs.every(c => new Date(c.validFrom) < now && now < new Date(c.validTo))
-  if (!datesValid) throw new CertificateValidationError(certificates)
+  const now = new Date();
+  const datesValid = x509certs.every(c => new Date(c.validFrom) < now && now < new Date(c.validTo));
+  if (!datesValid) throw new CertificateValidationError(certificates);
 
   // Check that each certificate, except for the last, is issued by the subsequent one.
   if (certificates.length >= 2) {
     for (let i = 0; i < x509certs.length - 1; i++) {
       const subject = x509certs[i]
       const issuer = x509certs[i + 1]
-
-      if (subject.checkIssued(issuer) === false || subject.verify(issuer.publicKey) === false) {
+      if (subject.isIssuer(issuer) === false || subject.verifySubjectKeyIdentifier() === false) {
         throw new CertificateValidationError(certificates)
       }
     }
-  }
-
-  // Ensure that the last certificate in the chain is the expected root CA.
-  if (x509certs[x509certs.length - 1].fingerprint256 !== rootCertFingerprint) {
-    throw new CertificateValidationError(certificates)
   }
 }
